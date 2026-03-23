@@ -39,3 +39,30 @@ export const createInternship = async (
 
   return internship;
 };
+
+//searching & filtering
+export const getInternships = async (query: any) => {
+  const { search, location, page = 1, limit = 10 } = query;
+
+  const offset = (page - 1) * limit;
+
+  let dbQuery = db("internships");
+
+  // Search by title
+  if (search) {
+    dbQuery = dbQuery.where("title", "ilike", `%${search}%`);
+  }
+
+  // Filter by location
+  if (location) {
+    dbQuery = dbQuery.andWhere("location", "ilike", `%${location}%`);
+  }
+
+  // Pagination
+  const internships = await dbQuery
+    .limit(limit)
+    .offset(offset)
+    .orderBy("created_at", "desc");
+
+  return internships;
+};
