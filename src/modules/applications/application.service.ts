@@ -25,15 +25,26 @@ if (data.resume_url) {
   insertData.resume_url = data.resume_url;
 }
 
-const result = await db<Application>("applications")
-  .insert(insertData)
-  .returning("*");
+// Step 3 — Insert with error handling
+  try {
+    const result = await db<Application>("applications")
+      .insert(insertData)
+      .returning("*");
 
-  const application = result[0];
+    const application = result[0];
 
-  if (!application) {
-    throw new Error("Application failed");
+    if (!application) {
+      throw new Error("Application failed");
+    }
+
+    return application;
+  } catch (error: any) {
+    //  Handle duplicate application
+    if (error.code === "23505") {
+      throw new Error("You have already applied to this internship");
+    }
+
+    // Unknown DB error
+    throw error;
   }
-
-  return application;
 };
